@@ -3,8 +3,10 @@ import { useState } from 'react';
 import {
   Activity, ArrowRight, Dumbbell, Flame,
   HeartPulse, Menu, Sparkles, Target,
-  Globe, ChevronDown, Check
+  Globe, ChevronDown, Check, Clock3
 } from 'lucide-react';
+
+type Language = 'RU' | 'UK' | 'EN';
 
 const translations = {
   RU: {
@@ -25,6 +27,14 @@ const translations = {
     goals: 'ТВОЯ ЦЕЛЬ',
     goalTitle: 'Твоё тело. Твои правила.',
     goalNames: ['Снижение веса', 'Набор мышц', 'Общая форма', 'Выносливость', 'Гибкость', 'Здоровье'],
+    workoutLabel: 'ПОД ТВОЮ ЦЕЛЬ',
+    workoutTitle: 'Выбери свою тренировку.',
+    workoutDescription: 'Домашние занятия без тренажёров и специального оборудования.',
+    duration: 'минут',
+    levels: ['Начальный', 'Средний', 'Продвинутый'],
+    choose: 'Выбрать тренировку',
+    chosen: 'Тренировка выбрана',
+    selectedMessage: 'Отличный выбор! Эта тренировка добавлена в твой текущий выбор.',
     nutrition: 'ПИТАНИЕ',
     nutritionTitle: 'Начни с понимания своего тела.',
     age: 'Возраст',
@@ -54,6 +64,14 @@ const translations = {
     goals: 'ТВОЯ МЕТА',
     goalTitle: 'Твоє тіло. Твої правила.',
     goalNames: ['Схуднення', 'Набір м’язів', 'Загальна форма', 'Витривалість', 'Гнучкість', 'Здоров’я'],
+    workoutLabel: 'ДЛЯ ТВОЄЇ МЕТИ',
+    workoutTitle: 'Обери своє тренування.',
+    workoutDescription: 'Домашні заняття без тренажерів і спеціального обладнання.',
+    duration: 'хвилин',
+    levels: ['Початковий', 'Середній', 'Просунутий'],
+    choose: 'Обрати тренування',
+    chosen: 'Тренування обрано',
+    selectedMessage: 'Чудовий вибір! Це тренування додано до твого поточного вибору.',
     nutrition: 'ХАРЧУВАННЯ',
     nutritionTitle: 'Почни з розуміння свого тіла.',
     age: 'Вік',
@@ -83,6 +101,14 @@ const translations = {
     goals: 'YOUR GOAL',
     goalTitle: 'Your body. Your rules.',
     goalNames: ['Weight loss', 'Build muscle', 'Get fit', 'Endurance', 'Flexibility', 'Wellness'],
+    workoutLabel: 'BUILT FOR YOUR GOAL',
+    workoutTitle: 'Choose your workout.',
+    workoutDescription: 'Home workouts without machines or special equipment.',
+    duration: 'minutes',
+    levels: ['Beginner', 'Intermediate', 'Advanced'],
+    choose: 'Choose workout',
+    chosen: 'Workout selected',
+    selectedMessage: 'Great choice! This workout has been added to your current selection.',
     nutrition: 'NUTRITION',
     nutritionTitle: 'Understand your body.',
     age: 'Age',
@@ -98,9 +124,157 @@ const translations = {
 
 const icons = [Dumbbell, Flame, Activity, Target, Sparkles, HeartPulse];
 
+const workoutLibrary = [
+  {
+    goal: 0,
+    title: ['Кардио без прыжков', 'Кардіо без стрибків', 'Low-impact cardio'],
+    description: [
+      'Активная тренировка для всего тела с умеренной нагрузкой.',
+      'Активне тренування для всього тіла з помірним навантаженням.',
+      'An active full-body session with moderate impact.'
+    ],
+    minutes: 20,
+    level: 0,
+    icon: Flame
+  },
+  {
+    goal: 0,
+    title: ['Интервальный фитнес', 'Інтервальний фітнес', 'Interval fitness'],
+    description: [
+      'Чередование активных упражнений и короткого отдыха.',
+      'Чергування активних вправ і короткого відпочинку.',
+      'Alternate active exercises with short recovery periods.'
+    ],
+    minutes: 25,
+    level: 1,
+    icon: Activity
+  },
+  {
+    goal: 1,
+    title: ['Сила собственного веса', 'Сила власної ваги', 'Bodyweight strength'],
+    description: [
+      'Базовые силовые упражнения для основных групп мышц.',
+      'Базові силові вправи для основних груп м’язів.',
+      'Fundamental strength exercises for major muscle groups.'
+    ],
+    minutes: 30,
+    level: 1,
+    icon: Dumbbell
+  },
+  {
+    goal: 1,
+    title: ['Сильный корпус', 'Сильний корпус', 'Core strength'],
+    description: [
+      'Упражнения для мышц живота, спины и стабилизации.',
+      'Вправи для м’язів живота, спини та стабілізації.',
+      'Exercises for your abs, back and core stability.'
+    ],
+    minutes: 18,
+    level: 0,
+    icon: Target
+  },
+  {
+    goal: 2,
+    title: ['Тренировка всего тела', 'Тренування всього тіла', 'Full body workout'],
+    description: [
+      'Комплекс упражнений для поддержания общей физической формы.',
+      'Комплекс вправ для підтримки загальної фізичної форми.',
+      'A balanced routine to maintain overall fitness.'
+    ],
+    minutes: 25,
+    level: 0,
+    icon: Activity
+  },
+  {
+    goal: 2,
+    title: ['Домашний фитнес', 'Домашній фітнес', 'Home fitness'],
+    description: [
+      'Разнообразные упражнения для ежедневной активности.',
+      'Різноманітні вправи для щоденної активності.',
+      'A varied routine to keep you moving every day.'
+    ],
+    minutes: 20,
+    level: 0,
+    icon: HeartPulse
+  },
+  {
+    goal: 3,
+    title: ['Интервальная выносливость', 'Інтервальна витривалість', 'Endurance intervals'],
+    description: [
+      'Постепенно развивай выносливость с чередованием нагрузки.',
+      'Поступово розвивай витривалість із чергуванням навантаження.',
+      'Build endurance with alternating work and recovery.'
+    ],
+    minutes: 25,
+    level: 1,
+    icon: Flame
+  },
+  {
+    goal: 3,
+    title: ['Энергия и темп', 'Енергія та темп', 'Energy and pace'],
+    description: [
+      'Динамичный комплекс для развития общей выносливости.',
+      'Динамічний комплекс для розвитку загальної витривалості.',
+      'A dynamic routine for improving overall stamina.'
+    ],
+    minutes: 22,
+    level: 1,
+    icon: Activity
+  },
+  {
+    goal: 4,
+    title: ['Мягкая растяжка', 'М’яке розтягування', 'Gentle stretching'],
+    description: [
+      'Спокойная растяжка основных групп мышц.',
+      'Спокійне розтягування основних груп м’язів.',
+      'A gentle stretch for your major muscle groups.'
+    ],
+    minutes: 15,
+    level: 0,
+    icon: HeartPulse
+  },
+  {
+    goal: 4,
+    title: ['Мобильность тела', 'Мобільність тіла', 'Full-body mobility'],
+    description: [
+      'Упражнения для подвижности суставов и контроля движений.',
+      'Вправи для рухливості суглобів і контролю рухів.',
+      'Exercises for joint mobility and movement control.'
+    ],
+    minutes: 20,
+    level: 1,
+    icon: Sparkles
+  },
+  {
+    goal: 5,
+    title: ['Зарядка для здоровья', 'Руханка для здоров’я', 'Healthy morning routine'],
+    description: [
+      'Лёгкий комплекс для мягкого начала активного дня.',
+      'Легкий комплекс для м’якого початку активного дня.',
+      'A gentle routine to start an active day.'
+    ],
+    minutes: 12,
+    level: 0,
+    icon: HeartPulse
+  },
+  {
+    goal: 5,
+    title: ['Движение каждый день', 'Рух щодня', 'Daily movement'],
+    description: [
+      'Несложные упражнения для регулярной физической активности.',
+      'Нескладні вправи для регулярної фізичної активності.',
+      'Simple exercises for regular daily activity.'
+    ],
+    minutes: 15,
+    level: 0,
+    icon: Activity
+  }
+];
+
 export default function App() {
-  const [lang, setLang] = useState<'RU' | 'UK' | 'EN'>('RU');
+  const [lang, setLang] = useState<Language>('RU');
   const [goal, setGoal] = useState(0);
+  const [selectedWorkout, setSelectedWorkout] = useState<number | null>(null);
   const [age, setAge] = useState('25');
   const [weight, setWeight] = useState('70');
   const [height, setHeight] = useState('175');
@@ -109,6 +283,10 @@ export default function App() {
   const [languageOpen, setLanguageOpen] = useState(false);
 
   const t = translations[lang];
+  const languageIndex = lang === 'RU' ? 0 : lang === 'UK' ? 1 : 2;
+  const visibleWorkouts = workoutLibrary
+    .map((workout, index) => ({ ...workout, id: index }))
+    .filter(workout => workout.goal === goal);
 
   function calculate() {
     const a = Number(age);
@@ -126,6 +304,11 @@ export default function App() {
   function scrollTo(id: string) {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
     setMenu(false);
+  }
+
+  function changeGoal(index: number) {
+    setGoal(index);
+    setSelectedWorkout(null);
   }
 
   return (
@@ -161,7 +344,6 @@ export default function App() {
             {languageOpen && (
               <div className="language-panel">
                 <span className="language-panel-label">LANGUAGE</span>
-
                 {([
                   ['RU', 'Русский'],
                   ['UK', 'Українська'],
@@ -224,6 +406,7 @@ export default function App() {
       <section className="workouts section" id="workouts">
         <span className="eyebrow">{t.goals}</span>
         <h2>{t.goalTitle}</h2>
+
         <div className="goal-grid">
           {t.goalNames.map((name, i) => {
             const Icon = icons[i];
@@ -231,7 +414,7 @@ export default function App() {
               <button
                 key={name}
                 className={goal === i ? 'goal-card active' : 'goal-card'}
-                onClick={() => setGoal(i)}
+                onClick={() => changeGoal(i)}
               >
                 <Icon size={22} />
                 <span>{name}</span>
@@ -239,6 +422,49 @@ export default function App() {
               </button>
             );
           })}
+        </div>
+
+        <div className="workout-results">
+          <span className="eyebrow">{t.workoutLabel}</span>
+          <h3>{t.workoutTitle}</h3>
+          <p className="workout-intro">{t.workoutDescription}</p>
+
+          <div className="workout-grid">
+            {visibleWorkouts.map(workout => {
+              const Icon = workout.icon;
+              const isSelected = selectedWorkout === workout.id;
+
+              return (
+                <article className={isSelected ? 'workout-card selected' : 'workout-card'} key={workout.id}>
+                  <div className="workout-card-icon">
+                    <Icon size={23} />
+                  </div>
+                  <h4>{workout.title[languageIndex]}</h4>
+                  <p>{workout.description[languageIndex]}</p>
+
+                  <div className="workout-meta">
+                    <span><Clock3 size={14} /> {workout.minutes} {t.duration}</span>
+                    <span>{t.levels[workout.level]}</span>
+                  </div>
+
+                  <button
+                    className="workout-select"
+                    onClick={() => setSelectedWorkout(isSelected ? null : workout.id)}
+                  >
+                    {isSelected ? t.chosen : t.choose}
+                    {isSelected ? <Check size={16} /> : <ArrowRight size={16} />}
+                  </button>
+                </article>
+              );
+            })}
+          </div>
+
+          {selectedWorkout !== null && (
+            <div className="workout-confirmation">
+              <Check size={18} />
+              <span>{t.selectedMessage}</span>
+            </div>
+          )}
         </div>
       </section>
 
