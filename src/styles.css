@@ -824,6 +824,294 @@ a {
   font-weight: 700;
 }
 
+/* Interactive workout session */
+
+.session-screen {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 48px 0 0;
+  animation: reveal .4s ease both;
+}
+
+.session-heading {
+  margin-bottom: 35px;
+}
+
+.session-heading h1 {
+  margin: 15px 0 25px;
+  color: #f2f3ed;
+  font: 800 clamp(32px, 6vw, 54px)/1.08 Manrope, sans-serif;
+  letter-spacing: -1.8px;
+}
+
+.session-progress-track {
+  width: 100%;
+  height: 7px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, .1);
+  border-radius: 20px;
+}
+
+.session-progress-track > div {
+  height: 100%;
+  background: var(--sage);
+  border-radius: inherit;
+  transition: width .4s ease;
+}
+
+.session-progress-label {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  color: #9da79a;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.session-progress-label span:first-child {
+  color: var(--sage);
+  font-weight: 700;
+}
+
+.session-exercise {
+  padding: 35px;
+  background:
+    radial-gradient(ellipse at 85% 0%, rgba(181, 198, 165, .12), transparent 55%),
+    #1b211b;
+  border: 1px solid rgba(181, 198, 165, .2);
+  border-radius: 20px;
+  animation: reveal .3s ease both;
+}
+
+.session-exercise-number {
+  width: 55px;
+  height: 55px;
+  margin-top: 25px;
+  display: grid;
+  place-items: center;
+  color: var(--sage);
+  background: rgba(181, 198, 165, .13);
+  border-radius: 14px;
+  font: 800 17px Manrope, sans-serif;
+}
+
+.session-exercise h2 {
+  margin: 22px 0 12px;
+  color: #f3f4ef;
+  font: 800 clamp(28px, 5vw, 42px)/1.12 Manrope, sans-serif;
+  letter-spacing: -1.2px;
+}
+
+.session-technique {
+  color: #aab3a5;
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+.session-set-display {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-top: 32px;
+  color: #9da79a;
+  font-size: 13px;
+}
+
+.session-set-display strong {
+  color: var(--sage);
+  font: 800 46px Manrope, sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+
+.session-target {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  margin: 18px 0 28px;
+}
+
+.session-target span {
+  color: #f0f2eb;
+  font: 700 24px Manrope, sans-serif;
+}
+
+.session-target small {
+  color: #9da79a;
+  font-size: 12px;
+}
+
+.session-done-button {
+  width: 100%;
+  min-height: 55px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 15px 20px;
+  color: #172017;
+  background: var(--sage);
+  border: 1px solid var(--sage);
+  border-radius: 11px;
+  font-size: 13px;
+  font-weight: 800;
+  transition: .2s;
+}
+
+.session-done-button:hover {
+  background: #d0dfc1;
+  transform: translateY(-2px);
+}
+
+.session-rest {
+  min-height: 330px;
+  padding: 40px 25px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background:
+    radial-gradient(ellipse at center, rgba(181, 198, 165, .15), transparent 65%),
+    #1b241c;
+  border: 1px solid rgba(181, 198, 165, .2);
+  border-radius: 20px;
+  animation: reveal .3s ease both;
+}
+
+.session-rest h2 {
+  margin: 25px 0 10px;
+  color: var(--sage);
+  font: 800 clamp(65px, 13vw, 100px)/1 Manrope, sans-serif;
+  letter-spacing: -4px;
+  font-variant-numeric: tabular-nums;
+}
+
+.session-rest > p {
+  color: #aab3a5;
+  font-size: 13px;
+}
+
+.session-rest-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 25px;
+}
+
+.session-bottom {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 20px;
+  padding: 16px 0;
+  border-top: 1px solid rgba(255, 255, 255, .12);
+}
+
+.session-bottom > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #9da79a;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.session-bottom button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 12px;
+  color: #dce4d5;
+  background: rgba(255, 255, 255, .05);
+  border: 1px solid rgba(255, 255, 255, .12);
+  border-radius: 8px;
+  font-size: 11px;
+  transition: .2s;
+}
+
+.session-bottom button:hover {
+  color: var(--sage);
+  border-color: var(--sage);
+}
+
+/* Workout completion */
+
+.session-complete {
+  max-width: 650px;
+  margin: 70px auto 0;
+  padding: 45px 30px;
+  text-align: center;
+  background:
+    radial-gradient(ellipse at center top, rgba(181, 198, 165, .17), transparent 65%),
+    #1b241c;
+  border: 1px solid rgba(181, 198, 165, .22);
+  border-radius: 22px;
+  animation: reveal .5s ease both;
+}
+
+.session-complete-icon {
+  width: 82px;
+  height: 82px;
+  margin: 0 auto 25px;
+  display: grid;
+  place-items: center;
+  color: #172017;
+  background: var(--sage);
+  border-radius: 24px;
+  box-shadow: 0 12px 40px rgba(181, 198, 165, .15);
+}
+
+.session-complete h1 {
+  margin: 17px 0 12px;
+  color: #f3f4ef;
+  font: 800 clamp(36px, 7vw, 58px)/1.05 Manrope, sans-serif;
+  letter-spacing: -2px;
+}
+
+.session-complete > p {
+  max-width: 420px;
+  margin: 0 auto;
+  color: #aab3a5;
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+.session-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin: 35px 0 10px;
+}
+
+.session-stats > div {
+  padding: 18px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: rgba(255, 255, 255, .05);
+  border: 1px solid rgba(255, 255, 255, .09);
+  border-radius: 12px;
+}
+
+.session-stats strong {
+  color: var(--sage);
+  font: 800 25px Manrope, sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+
+.session-stats span {
+  color: #aab3a5;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.session-complete .detail-start-button {
+  margin-top: 28px;
+}
+
 /* Nutrition */
 
 .nutrition {
@@ -1135,6 +1423,71 @@ footer .logo {
 
   .workout-finish button {
     width: 100%;
+  }
+
+  .session-screen {
+    padding-top: 32px;
+  }
+
+  .session-heading h1 {
+    font-size: 34px;
+  }
+
+  .session-exercise {
+    padding: 24px 19px;
+    border-radius: 16px;
+  }
+
+  .session-exercise h2 {
+    font-size: 30px;
+  }
+
+  .session-set-display strong {
+    font-size: 40px;
+  }
+
+  .session-rest {
+    min-height: 290px;
+    padding: 30px 15px;
+  }
+
+  .session-rest h2 {
+    font-size: 72px;
+  }
+
+  .session-bottom {
+    justify-content: center;
+  }
+
+  .session-bottom > span {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .session-bottom button {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .session-complete {
+    margin-top: 40px;
+    padding: 32px 18px;
+  }
+
+  .session-stats {
+    gap: 6px;
+  }
+
+  .session-stats > div {
+    padding: 14px 5px;
+  }
+
+  .session-stats strong {
+    font-size: 21px;
+  }
+
+  .session-stats span {
+    font-size: 9px;
   }
 
   .calculator {
