@@ -1,9 +1,10 @@
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Activity, ArrowRight, Dumbbell, Flame,
   HeartPulse, Menu, Sparkles, Target,
-  Globe, ChevronDown, Check, Clock3
+  Globe, ChevronDown, Check, Clock3,
+  ArrowLeft, Play, Pause, RotateCcw
 } from 'lucide-react';
 
 type Language = 'RU' | 'UK' | 'EN';
@@ -32,9 +33,7 @@ const translations = {
     workoutDescription: 'Домашние занятия без тренажёров и специального оборудования.',
     duration: 'минут',
     levels: ['Начальный', 'Средний', 'Продвинутый'],
-    choose: 'Выбрать тренировку',
-    chosen: 'Тренировка выбрана',
-    selectedMessage: 'Отличный выбор! Эта тренировка добавлена в твой текущий выбор.',
+    choose: 'Подробнее',
     nutrition: 'ПИТАНИЕ',
     nutritionTitle: 'Начни с понимания своего тела.',
     age: 'Возраст',
@@ -44,7 +43,24 @@ const translations = {
     result: 'Примерная норма калорий',
     cta: 'Сделай первый шаг.',
     ctaDesc: 'Не нужно быть идеальным. Нужно просто начать.',
-    footer: 'Сила строится день за днём.'
+    footer: 'Сила строится день за днём.',
+    back: 'Назад к тренировкам',
+    workoutPlan: 'ПЛАН ТРЕНИРОВКИ',
+    exercises: 'Упражнения',
+    sets: 'подхода',
+    reps: 'повторений',
+    technique: 'Техника выполнения',
+    rest: 'Таймер отдыха',
+    seconds: 'сек',
+    startWorkout: 'Начать тренировку',
+    pause: 'Пауза',
+    resume: 'Продолжить',
+    reset: 'Сбросить',
+    finish: 'Завершить тренировку',
+    completed: 'Тренировка завершена!',
+    completedText: 'Отличная работа. Не забывай восстановиться и выпить воды.',
+    safety: 'Выполняй упражнения в комфортном темпе. При боли или плохом самочувствии остановись.',
+    warmup: 'Перед началом сделай лёгкую разминку в течение 3–5 минут.'
   },
   UK: {
     nav: ['Можливості', 'Тренування', 'Харчування'],
@@ -69,9 +85,7 @@ const translations = {
     workoutDescription: 'Домашні заняття без тренажерів і спеціального обладнання.',
     duration: 'хвилин',
     levels: ['Початковий', 'Середній', 'Просунутий'],
-    choose: 'Обрати тренування',
-    chosen: 'Тренування обрано',
-    selectedMessage: 'Чудовий вибір! Це тренування додано до твого поточного вибору.',
+    choose: 'Детальніше',
     nutrition: 'ХАРЧУВАННЯ',
     nutritionTitle: 'Почни з розуміння свого тіла.',
     age: 'Вік',
@@ -81,7 +95,24 @@ const translations = {
     result: 'Приблизна норма калорій',
     cta: 'Зроби перший крок.',
     ctaDesc: 'Не потрібно бути ідеальним. Потрібно просто почати.',
-    footer: 'Сила будується день за днем.'
+    footer: 'Сила будується день за днем.',
+    back: 'Назад до тренувань',
+    workoutPlan: 'ПЛАН ТРЕНУВАННЯ',
+    exercises: 'Вправи',
+    sets: 'підходи',
+    reps: 'повторень',
+    technique: 'Техніка виконання',
+    rest: 'Таймер відпочинку',
+    seconds: 'сек',
+    startWorkout: 'Почати тренування',
+    pause: 'Пауза',
+    resume: 'Продовжити',
+    reset: 'Скинути',
+    finish: 'Завершити тренування',
+    completed: 'Тренування завершено!',
+    completedText: 'Чудова робота. Не забувай відновитися та випити води.',
+    safety: 'Виконуй вправи в комфортному темпі. При болю або поганому самопочутті зупинись.',
+    warmup: 'Перед початком зроби легку розминку протягом 3–5 хвилин.'
   },
   EN: {
     nav: ['Features', 'Workouts', 'Nutrition'],
@@ -106,9 +137,7 @@ const translations = {
     workoutDescription: 'Home workouts without machines or special equipment.',
     duration: 'minutes',
     levels: ['Beginner', 'Intermediate', 'Advanced'],
-    choose: 'Choose workout',
-    chosen: 'Workout selected',
-    selectedMessage: 'Great choice! This workout has been added to your current selection.',
+    choose: 'View workout',
     nutrition: 'NUTRITION',
     nutritionTitle: 'Understand your body.',
     age: 'Age',
@@ -118,7 +147,24 @@ const translations = {
     result: 'Estimated calorie target',
     cta: 'Make the first move.',
     ctaDesc: 'You do not need to be perfect. You just need to begin.',
-    footer: 'Strength is built one day at a time.'
+    footer: 'Strength is built one day at a time.',
+    back: 'Back to workouts',
+    workoutPlan: 'WORKOUT PLAN',
+    exercises: 'Exercises',
+    sets: 'sets',
+    reps: 'reps',
+    technique: 'How to perform',
+    rest: 'Rest timer',
+    seconds: 'sec',
+    startWorkout: 'Start workout',
+    pause: 'Pause',
+    resume: 'Resume',
+    reset: 'Reset',
+    finish: 'Finish workout',
+    completed: 'Workout completed!',
+    completedText: 'Great work. Remember to recover and drink some water.',
+    safety: 'Move at a comfortable pace. Stop if you feel pain or unwell.',
+    warmup: 'Start with a light 3–5 minute warm-up.'
   }
 };
 
@@ -133,9 +179,7 @@ const workoutLibrary = [
       'Активне тренування для всього тіла з помірним навантаженням.',
       'An active full-body session with moderate impact.'
     ],
-    minutes: 20,
-    level: 0,
-    icon: Flame
+    minutes: 20, level: 0, icon: Flame
   },
   {
     goal: 0,
@@ -145,9 +189,7 @@ const workoutLibrary = [
       'Чергування активних вправ і короткого відпочинку.',
       'Alternate active exercises with short recovery periods.'
     ],
-    minutes: 25,
-    level: 1,
-    icon: Activity
+    minutes: 25, level: 1, icon: Activity
   },
   {
     goal: 1,
@@ -157,9 +199,7 @@ const workoutLibrary = [
       'Базові силові вправи для основних груп м’язів.',
       'Fundamental strength exercises for major muscle groups.'
     ],
-    minutes: 30,
-    level: 1,
-    icon: Dumbbell
+    minutes: 30, level: 1, icon: Dumbbell
   },
   {
     goal: 1,
@@ -169,9 +209,7 @@ const workoutLibrary = [
       'Вправи для м’язів живота, спини та стабілізації.',
       'Exercises for your abs, back and core stability.'
     ],
-    minutes: 18,
-    level: 0,
-    icon: Target
+    minutes: 18, level: 0, icon: Target
   },
   {
     goal: 2,
@@ -181,9 +219,7 @@ const workoutLibrary = [
       'Комплекс вправ для підтримки загальної фізичної форми.',
       'A balanced routine to maintain overall fitness.'
     ],
-    minutes: 25,
-    level: 0,
-    icon: Activity
+    minutes: 25, level: 0, icon: Activity
   },
   {
     goal: 2,
@@ -193,9 +229,7 @@ const workoutLibrary = [
       'Різноманітні вправи для щоденної активності.',
       'A varied routine to keep you moving every day.'
     ],
-    minutes: 20,
-    level: 0,
-    icon: HeartPulse
+    minutes: 20, level: 0, icon: HeartPulse
   },
   {
     goal: 3,
@@ -205,9 +239,7 @@ const workoutLibrary = [
       'Поступово розвивай витривалість із чергуванням навантаження.',
       'Build endurance with alternating work and recovery.'
     ],
-    minutes: 25,
-    level: 1,
-    icon: Flame
+    minutes: 25, level: 1, icon: Flame
   },
   {
     goal: 3,
@@ -217,9 +249,7 @@ const workoutLibrary = [
       'Динамічний комплекс для розвитку загальної витривалості.',
       'A dynamic routine for improving overall stamina.'
     ],
-    minutes: 22,
-    level: 1,
-    icon: Activity
+    minutes: 22, level: 1, icon: Activity
   },
   {
     goal: 4,
@@ -229,9 +259,7 @@ const workoutLibrary = [
       'Спокійне розтягування основних груп м’язів.',
       'A gentle stretch for your major muscle groups.'
     ],
-    minutes: 15,
-    level: 0,
-    icon: HeartPulse
+    minutes: 15, level: 0, icon: HeartPulse
   },
   {
     goal: 4,
@@ -241,9 +269,7 @@ const workoutLibrary = [
       'Вправи для рухливості суглобів і контролю рухів.',
       'Exercises for joint mobility and movement control.'
     ],
-    minutes: 20,
-    level: 1,
-    icon: Sparkles
+    minutes: 20, level: 1, icon: Sparkles
   },
   {
     goal: 5,
@@ -253,9 +279,7 @@ const workoutLibrary = [
       'Легкий комплекс для м’якого початку активного дня.',
       'A gentle routine to start an active day.'
     ],
-    minutes: 12,
-    level: 0,
-    icon: HeartPulse
+    minutes: 12, level: 0, icon: HeartPulse
   },
   {
     goal: 5,
@@ -265,28 +289,178 @@ const workoutLibrary = [
       'Нескладні вправи для регулярної фізичної активності.',
       'Simple exercises for regular daily activity.'
     ],
-    minutes: 15,
-    level: 0,
-    icon: Activity
+    minutes: 15, level: 0, icon: Activity
   }
+];
+
+const exercisePlans = [
+  [
+    [
+      ['Шаги на месте', '2', '40', 'Держи корпус прямо, двигай руками в ритме шага.'],
+      ['Приседания до комфортной глубины', '2', '12', 'Отводи таз назад, колени направляй по линии носков.'],
+      ['Отведение ноги назад стоя', '2', '12 на каждую', 'Держись за опору, не прогибай поясницу.'],
+      ['Подъём коленей стоя', '2', '30 сек', 'Поднимай колени поочерёдно, сохраняй ровное дыхание.']
+    ],
+    [
+      ['Кроки на місці', '2', '40', 'Тримай корпус прямо, рухай руками в ритмі кроку.'],
+      ['Присідання до комфортної глибини', '2', '12', 'Відводь таз назад, коліна спрямовуй по лінії носків.'],
+      ['Відведення ноги назад стоячи', '2', '12 на кожну', 'Тримайся за опору, не прогинай поперек.'],
+      ['Піднімання колін стоячи', '2', '30 сек', 'Піднімай коліна почергово, зберігай рівне дихання.']
+    ],
+    [
+      ['March in place', '2', '40', 'Keep your torso upright and move your arms with each step.'],
+      ['Comfortable squats', '2', '12', 'Move your hips back and keep knees aligned with your toes.'],
+      ['Standing leg extensions', '2', '12 each', 'Hold a support and avoid arching your lower back.'],
+      ['Standing knee raises', '2', '30 sec', 'Raise your knees alternately and breathe steadily.']
+    ]
+  ],
+  [
+    [
+      ['Шаги с ускорением', '3', '30 сек', 'Ускоряй шаг постепенно, не теряя контроля движений.'],
+      ['Приседания', '3', '12', 'Опускайся плавно и не округляй спину.'],
+      ['Шаги в сторону', '3', '30 сек', 'Слегка согни колени и делай контролируемые шаги.'],
+      ['Подъём коленей', '3', '30 сек', 'Работай в комфортном темпе без резких движений.']
+    ],
+    [
+      ['Кроки з прискоренням', '3', '30 сек', 'Поступово прискорюй крок, контролюй рухи.'],
+      ['Присідання', '3', '12', 'Опускайся плавно та не округлюй спину.'],
+      ['Кроки вбік', '3', '30 сек', 'Злегка зігни коліна та роби контрольовані кроки.'],
+      ['Піднімання колін', '3', '30 сек', 'Працюй у комфортному темпі без різких рухів.']
+    ],
+    [
+      ['Fast marching', '3', '30 sec', 'Increase your pace gradually while staying in control.'],
+      ['Squats', '3', '12', 'Lower smoothly and keep your back neutral.'],
+      ['Side steps', '3', '30 sec', 'Keep knees soft and take controlled steps.'],
+      ['Knee raises', '3', '30 sec', 'Work at a comfortable pace without sudden movements.']
+    ]
+  ],
+  [
+    [
+      ['Приседания', '3', '10', 'Держи спину нейтрально, колени направляй по линии стоп.'],
+      ['Отжимания от стены', '3', '10', 'Держи тело прямой линией и сгибай локти под контролем.'],
+      ['Ягодичный мост', '3', '12', 'Поднимай таз за счёт ягодиц, не переразгибай поясницу.'],
+      ['Планка с колен', '2', '20 сек', 'Сохраняй ровную линию от головы до колен.']
+    ],
+    [
+      ['Присідання', '3', '10', 'Тримай спину нейтрально, коліна спрямовуй по лінії стоп.'],
+      ['Віджимання від стіни', '3', '10', 'Тримай тіло прямою лінією та згинай лікті контрольовано.'],
+      ['Сідничний місток', '3', '12', 'Підіймай таз за рахунок сідниць, не перенапружуй поперек.'],
+      ['Планка з колін', '2', '20 сек', 'Зберігай рівну лінію від голови до колін.']
+    ],
+    [
+      ['Squats', '3', '10', 'Keep a neutral spine and align knees with your feet.'],
+      ['Wall push-ups', '3', '10', 'Keep your body straight and bend your elbows with control.'],
+      ['Glute bridge', '3', '12', 'Lift through your glutes without over-arching your back.'],
+      ['Knee plank', '2', '20 sec', 'Keep a straight line from your head to your knees.']
+    ]
+  ],
+  [
+    [
+      ['Шаги на месте', '2', '45 сек', 'Двигайся ритмично и сохраняй спокойное дыхание.'],
+      ['Приседания до стула', '2', '10', 'Коснись стула и плавно вернись в исходное положение.'],
+      ['Отжимания от стены', '2', '10', 'Не прогибай поясницу, двигайся плавно.'],
+      ['Подъём на носки', '2', '15', 'Поднимайся и опускайся медленно, держась за опору.']
+    ],
+    [
+      ['Кроки на місці', '2', '45 сек', 'Рухайся ритмічно та зберігай спокійне дихання.'],
+      ['Присідання до стільця', '2', '10', 'Торкнись стільця та плавно повернись у вихідне положення.'],
+      ['Віджимання від стіни', '2', '10', 'Не прогинай поперек, рухайся плавно.'],
+      ['Підйом на носки', '2', '15', 'Повільно підіймайся й опускайся, тримаючись за опору.']
+    ],
+    [
+      ['March in place', '2', '45 sec', 'Move rhythmically and keep your breathing steady.'],
+      ['Chair squats', '2', '10', 'Tap the chair and return smoothly to standing.'],
+      ['Wall push-ups', '2', '10', 'Avoid arching your back and move smoothly.'],
+      ['Calf raises', '2', '15', 'Rise and lower slowly while holding support.']
+    ]
+  ],
+  [
+    [
+      ['Наклоны головы и плеч', '2', '30 сек', 'Двигайся медленно, без рывков и боли.'],
+      ['Круги плечами', '2', '10', 'Выполняй плавные круговые движения небольшой амплитуды.'],
+      ['Мягкая растяжка задней поверхности бедра', '2', '20 сек', 'Слегка согни колено и не пружинь.'],
+      ['Повороты грудного отдела', '2', '8 на каждую', 'Поворачивайся плавно, не форсируя амплитуду.']
+    ],
+    [
+      ['Нахили голови та плечей', '2', '30 сек', 'Рухайся повільно, без ривків і болю.'],
+      ['Кола плечима', '2', '10', 'Виконуй плавні кругові рухи невеликої амплітуди.'],
+      ['М’яке розтягування задньої поверхні стегна', '2', '20 сек', 'Злегка зігни коліно та не пружинь.'],
+      ['Повороти грудного відділу', '2', '8 на кожну', 'Повертайся плавно, не форсуючи амплітуду.']
+    ],
+    [
+      ['Head and shoulder tilts', '2', '30 sec', 'Move slowly without sudden movements or pain.'],
+      ['Shoulder circles', '2', '10', 'Make smooth circles with a comfortable range of motion.'],
+      ['Gentle hamstring stretch', '2', '20 sec', 'Keep a soft knee and do not bounce.'],
+      ['Upper-body rotations', '2', '8 each', 'Rotate smoothly without forcing the range.']
+    ]
+  ],
+  [
+    [
+      ['Спокойная ходьба на месте', '2', '60 сек', 'Дыши ровно и двигайся в комфортном темпе.'],
+      ['Подъём на носки', '2', '12', 'Держись за опору и выполняй движения плавно.'],
+      ['Отведение рук в стороны', '2', '12', 'Не поднимай плечи к ушам.'],
+      ['Мягкие приседания', '2', '8', 'Выбирай удобную глубину и сохраняй равновесие.']
+    ],
+    [
+      ['Спокійна ходьба на місці', '2', '60 сек', 'Дихай рівно та рухайся у комфортному темпі.'],
+      ['Підйом на носки', '2', '12', 'Тримайся за опору та виконуй рухи плавно.'],
+      ['Відведення рук убік', '2', '12', 'Не підіймай плечі до вух.'],
+      ['М’які присідання', '2', '8', 'Обирай зручну глибину та зберігай рівновагу.']
+    ],
+    [
+      ['Easy march in place', '2', '60 sec', 'Breathe steadily and move at a comfortable pace.'],
+      ['Calf raises', '2', '12', 'Hold a support and move smoothly.'],
+      ['Side arm raises', '2', '12', 'Keep your shoulders away from your ears.'],
+      ['Gentle squats', '2', '8', 'Choose a comfortable depth and maintain balance.']
+    ]
+  ]
 ];
 
 export default function App() {
   const [lang, setLang] = useState<Language>('RU');
   const [goal, setGoal] = useState(0);
-  const [selectedWorkout, setSelectedWorkout] = useState<number | null>(null);
+  const [activeWorkout, setActiveWorkout] = useState<number | null>(null);
   const [age, setAge] = useState('25');
   const [weight, setWeight] = useState('70');
   const [height, setHeight] = useState('175');
   const [calories, setCalories] = useState<number | null>(null);
   const [menu, setMenu] = useState(false);
   const [languageOpen, setLanguageOpen] = useState(false);
+  const [restSeconds, setRestSeconds] = useState(60);
+  const [timerRunning, setTimerRunning] = useState(false);
+  const [workoutStarted, setWorkoutStarted] = useState(false);
 
   const t = translations[lang];
   const languageIndex = lang === 'RU' ? 0 : lang === 'UK' ? 1 : 2;
+
   const visibleWorkouts = workoutLibrary
     .map((workout, index) => ({ ...workout, id: index }))
     .filter(workout => workout.goal === goal);
+
+  const currentWorkout = activeWorkout === null
+    ? null
+    : workoutLibrary[activeWorkout];
+
+  const currentExercises = currentWorkout
+    ? exercisePlans[currentWorkout.goal][languageIndex]
+    : [];
+
+  useEffect(() => {
+    if (!timerRunning) return;
+
+    const timer = window.setInterval(() => {
+      setRestSeconds(previous => {
+        if (previous <= 1) {
+          window.clearInterval(timer);
+          setTimerRunning(false);
+          return 0;
+        }
+        return previous - 1;
+      });
+    }, 1000);
+
+    return () => window.clearInterval(timer);
+  }, [timerRunning]);
 
   function calculate() {
     const a = Number(age);
@@ -308,206 +482,333 @@ export default function App() {
 
   function changeGoal(index: number) {
     setGoal(index);
-    setSelectedWorkout(null);
+  }
+
+  function openWorkout(id: number) {
+    setActiveWorkout(id);
+    setRestSeconds(60);
+    setTimerRunning(false);
+    setWorkoutStarted(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function closeWorkout() {
+    setActiveWorkout(null);
+    setTimerRunning(false);
+    setWorkoutStarted(false);
+    setRestSeconds(60);
+  }
+
+  function resetTimer() {
+    setTimerRunning(false);
+    setRestSeconds(60);
+  }
+
+  function formatTime(seconds: number) {
+    const minutes = Math.floor(seconds / 60);
+    const remaining = seconds % 60;
+    return `${String(minutes).padStart(2, '0')}:${String(remaining).padStart(2, '0')}`;
   }
 
   return (
     <main>
-      <header className="topbar">
-        <a className="logo" href="#">VIGOR<span>.</span></a>
-
-        <nav className={menu ? 'nav open' : 'nav'}>
-          {t.nav.map((item, i) => (
-            <button key={item} onClick={() => scrollTo(['features', 'workouts', 'nutrition'][i])}>
-              {item}
+      {activeWorkout !== null && currentWorkout ? (
+        <section className="workout-detail-page">
+          <div className="workout-detail-top">
+            <button className="detail-back" onClick={closeWorkout}>
+              <ArrowLeft size={18} />
+              {t.back}
             </button>
-          ))}
-        </nav>
+            <span className="eyebrow">{t.workoutPlan}</span>
+          </div>
 
-        <div className="header-actions">
-          <div className="language-picker">
-            <button
-              className={languageOpen ? 'language-trigger active' : 'language-trigger'}
-              type="button"
-              aria-label="Choose language"
-              aria-expanded={languageOpen}
-              onClick={() => setLanguageOpen(!languageOpen)}
-            >
-              <Globe size={16} />
-              <span>{lang}</span>
-              <ChevronDown
-                className={languageOpen ? 'language-chevron rotated' : 'language-chevron'}
-                size={14}
-              />
-            </button>
+          <div className="workout-detail-heading">
+            <span className="eyebrow">{t.goalNames[currentWorkout.goal]}</span>
+            <h1>{currentWorkout.title[languageIndex]}</h1>
+            <p>{currentWorkout.description[languageIndex]}</p>
 
-            {languageOpen && (
-              <div className="language-panel">
-                <span className="language-panel-label">LANGUAGE</span>
-                {([
-                  ['RU', 'Русский'],
-                  ['UK', 'Українська'],
-                  ['EN', 'English']
-                ] as const).map(([code, name]) => (
-                  <button
-                    type="button"
-                    key={code}
-                    className={lang === code ? 'language-option selected' : 'language-option'}
-                    onClick={() => {
-                      setLang(code);
-                      setLanguageOpen(false);
-                    }}
-                  >
-                    <span className="language-code">{code}</span>
-                    <span className="language-name">{name}</span>
-                    {lang === code && <Check size={16} />}
-                  </button>
-                ))}
-              </div>
+            <div className="detail-summary">
+              <span><Clock3 size={16} /> {currentWorkout.minutes} {t.duration}</span>
+              <span>{t.levels[currentWorkout.level]}</span>
+              <span>{currentExercises.length} {t.exercises.toLowerCase()}</span>
+            </div>
+          </div>
+
+          <div className="detail-notice">
+            <HeartPulse size={19} />
+            <div>
+              <strong>{t.warmup}</strong>
+              <p>{t.safety}</p>
+            </div>
+          </div>
+
+          <div className="exercise-section">
+            <span className="eyebrow">{t.workoutPlan}</span>
+            <h2>{t.exercises}</h2>
+
+            <div className="exercise-list">
+              {currentExercises.map((exercise, index) => (
+                <article className="exercise-card" key={`${activeWorkout}-${index}`}>
+                  <div className="exercise-number">
+                    {String(index + 1).padStart(2, '0')}
+                  </div>
+                  <div className="exercise-content">
+                    <h3>{exercise[0]}</h3>
+                    <div className="exercise-stats">
+                      <span>{exercise[1]} {t.sets}</span>
+                      <span>{exercise[2]} {t.reps}</span>
+                    </div>
+                    <span className="exercise-technique-label">{t.technique}</span>
+                    <p>{exercise[3]}</p>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+
+          <div className="rest-timer-card">
+            <span className="eyebrow">{t.rest}</span>
+            <h2>{formatTime(restSeconds)}</h2>
+            <p>{t.seconds}</p>
+            <div className="timer-actions">
+              <button
+                className="timer-main-button"
+                onClick={() => {
+                  setWorkoutStarted(true);
+                  setTimerRunning(!timerRunning);
+                }}
+              >
+                {timerRunning ? <Pause size={18} /> : <Play size={18} />}
+                {timerRunning ? t.pause : t.resume}
+              </button>
+              <button className="timer-reset-button" onClick={resetTimer}>
+                <RotateCcw size={17} />
+                {t.reset}
+              </button>
+            </div>
+            {!workoutStarted && (
+              <button
+                className="detail-start-button"
+                onClick={() => {
+                  setWorkoutStarted(true);
+                  setTimerRunning(false);
+                }}
+              >
+                {t.startWorkout}
+                <ArrowRight size={18} />
+              </button>
             )}
           </div>
 
-          <button className="mobile-menu" onClick={() => setMenu(!menu)}>
-            <Menu />
-          </button>
-        </div>
-      </header>
-
-      <section className="hero">
-        <div className="hero-image" />
-        <div className="hero-content">
-          <span className="eyebrow">{t.eyebrow}</span>
-          <h1>{t.title}<br /><em>{t.accent}</em></h1>
-          <p>{t.desc}</p>
-          <button className="primary-button" onClick={() => scrollTo('workouts')}>
-            {t.start}<ArrowRight size={18} />
-          </button>
-          <div className="hero-caption">VIGOR FITNESS PLATFORM · 2026</div>
-        </div>
-      </section>
-
-      <section className="features section" id="features">
-        <span className="eyebrow">{t.features}</span>
-        <h2>{t.featureTitle}</h2>
-        <div className="feature-grid">
-          {t.cards.map((card, i) => {
-            const Icon = [Dumbbell, HeartPulse, Activity][i];
-            return (
-              <article className="feature-card" key={card}>
-                <Icon size={28} />
-                <h3>{card}</h3>
-                <p>{t.cardDesc[i]}</p>
-              </article>
-            );
-          })}
-        </div>
-      </section>
-
-      <section className="workouts section" id="workouts">
-        <span className="eyebrow">{t.goals}</span>
-        <h2>{t.goalTitle}</h2>
-
-        <div className="goal-grid">
-          {t.goalNames.map((name, i) => {
-            const Icon = icons[i];
-            return (
-              <button
-                key={name}
-                className={goal === i ? 'goal-card active' : 'goal-card'}
-                onClick={() => changeGoal(i)}
-              >
-                <Icon size={22} />
-                <span>{name}</span>
-                <ArrowRight size={16} />
+          {workoutStarted && (
+            <div className="workout-finish">
+              <Check size={20} />
+              <div>
+                <strong>{t.startWorkout}</strong>
+                <p>{t.safety}</p>
+              </div>
+              <button onClick={() => {
+                setWorkoutStarted(false);
+                setTimerRunning(false);
+                setRestSeconds(60);
+                setActiveWorkout(null);
+              }}>
+                {t.finish}
               </button>
-            );
-          })}
-        </div>
-
-        <div className="workout-results">
-          <span className="eyebrow">{t.workoutLabel}</span>
-          <h3>{t.workoutTitle}</h3>
-          <p className="workout-intro">{t.workoutDescription}</p>
-
-          <div className="workout-grid">
-            {visibleWorkouts.map(workout => {
-              const Icon = workout.icon;
-              const isSelected = selectedWorkout === workout.id;
-
-              return (
-                <article className={isSelected ? 'workout-card selected' : 'workout-card'} key={workout.id}>
-                  <div className="workout-card-icon">
-                    <Icon size={23} />
-                  </div>
-                  <h4>{workout.title[languageIndex]}</h4>
-                  <p>{workout.description[languageIndex]}</p>
-
-                  <div className="workout-meta">
-                    <span><Clock3 size={14} /> {workout.minutes} {t.duration}</span>
-                    <span>{t.levels[workout.level]}</span>
-                  </div>
-
-                  <button
-                    className="workout-select"
-                    onClick={() => setSelectedWorkout(isSelected ? null : workout.id)}
-                  >
-                    {isSelected ? t.chosen : t.choose}
-                    {isSelected ? <Check size={16} /> : <ArrowRight size={16} />}
-                  </button>
-                </article>
-              );
-            })}
-          </div>
-
-          {selectedWorkout !== null && (
-            <div className="workout-confirmation">
-              <Check size={18} />
-              <span>{t.selectedMessage}</span>
             </div>
           )}
-        </div>
-      </section>
+        </section>
+      ) : (
+        <>
+          <header className="topbar">
+            <a className="logo" href="#">VIGOR<span>.</span></a>
 
-      <section className="nutrition section" id="nutrition">
-        <span className="eyebrow">{t.nutrition}</span>
-        <h2>{t.nutritionTitle}</h2>
-        <div className="calculator">
-          <label>{t.age}
-            <input type="number" value={age} onChange={e => setAge(e.target.value)} />
-          </label>
-          <label>{t.weight}
-            <input type="number" value={weight} onChange={e => setWeight(e.target.value)} />
-          </label>
-          <label>{t.height}
-            <input type="number" value={height} onChange={e => setHeight(e.target.value)} />
-          </label>
-          <button className="primary-button" onClick={calculate}>
-            {t.calculate}<ArrowRight size={18} />
-          </button>
-        </div>
-        {calories !== null && (
-          <div className="result">
-            <span>{t.result}</span>
-            <strong>{calories} kcal</strong>
-            <small>Ориентировочная оценка по формуле Миффлина — Сан Жеора для мужчин.</small>
-          </div>
-        )}
-      </section>
+            <nav className={menu ? 'nav open' : 'nav'}>
+              {t.nav.map((item, i) => (
+                <button key={item} onClick={() => scrollTo(['features', 'workouts', 'nutrition'][i])}>
+                  {item}
+                </button>
+              ))}
+            </nav>
 
-      <section className="cta">
-        <Sparkles size={25} />
-        <h2>{t.cta}</h2>
-        <p>{t.ctaDesc}</p>
-        <button className="primary-button" onClick={() => scrollTo('workouts')}>
-          {t.start}<ArrowRight size={18} />
-        </button>
-      </section>
+            <div className="header-actions">
+              <div className="language-picker">
+                <button
+                  className={languageOpen ? 'language-trigger active' : 'language-trigger'}
+                  type="button"
+                  aria-label="Choose language"
+                  aria-expanded={languageOpen}
+                  onClick={() => setLanguageOpen(!languageOpen)}
+                >
+                  <Globe size={16} />
+                  <span>{lang}</span>
+                  <ChevronDown
+                    className={languageOpen ? 'language-chevron rotated' : 'language-chevron'}
+                    size={14}
+                  />
+                </button>
 
-      <footer>
-        <a className="logo" href="#">VIGOR<span>.</span></a>
-        <p>{t.footer}</p>
-        <small>© 2026 VIGOR</small>
-      </footer>
+                {languageOpen && (
+                  <div className="language-panel">
+                    <span className="language-panel-label">LANGUAGE</span>
+                    {([
+                      ['RU', 'Русский'],
+                      ['UK', 'Українська'],
+                      ['EN', 'English']
+                    ] as const).map(([code, name]) => (
+                      <button
+                        type="button"
+                        key={code}
+                        className={lang === code ? 'language-option selected' : 'language-option'}
+                        onClick={() => {
+                          setLang(code);
+                          setLanguageOpen(false);
+                        }}
+                      >
+                        <span className="language-code">{code}</span>
+                        <span className="language-name">{name}</span>
+                        {lang === code && <Check size={16} />}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <button className="mobile-menu" onClick={() => setMenu(!menu)}>
+                <Menu />
+              </button>
+            </div>
+          </header>
+
+          <section className="hero">
+            <div className="hero-image" />
+            <div className="hero-content">
+              <span className="eyebrow">{t.eyebrow}</span>
+              <h1>{t.title}<br /><em>{t.accent}</em></h1>
+              <p>{t.desc}</p>
+              <button className="primary-button" onClick={() => scrollTo('workouts')}>
+                {t.start}<ArrowRight size={18} />
+              </button>
+              <div className="hero-caption">VIGOR FITNESS PLATFORM · 2026</div>
+            </div>
+          </section>
+
+          <section className="features section" id="features">
+            <span className="eyebrow">{t.features}</span>
+            <h2>{t.featureTitle}</h2>
+            <div className="feature-grid">
+              {t.cards.map((card, i) => {
+                const Icon = [Dumbbell, HeartPulse, Activity][i];
+                return (
+                  <article className="feature-card" key={card}>
+                    <Icon size={28} />
+                    <h3>{card}</h3>
+                    <p>{t.cardDesc[i]}</p>
+                  </article>
+                );
+              })}
+            </div>
+          </section>
+
+          <section className="workouts section" id="workouts">
+            <span className="eyebrow">{t.goals}</span>
+            <h2>{t.goalTitle}</h2>
+
+            <div className="goal-grid">
+              {t.goalNames.map((name, i) => {
+                const Icon = icons[i];
+                return (
+                  <button
+                    key={name}
+                    className={goal === i ? 'goal-card active' : 'goal-card'}
+                    onClick={() => changeGoal(i)}
+                  >
+                    <Icon size={22} />
+                    <span>{name}</span>
+                    <ArrowRight size={16} />
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="workout-results">
+              <span className="eyebrow">{t.workoutLabel}</span>
+              <h3>{t.workoutTitle}</h3>
+              <p className="workout-intro">{t.workoutDescription}</p>
+
+              <div className="workout-grid">
+                {visibleWorkouts.map(workout => {
+                  const Icon = workout.icon;
+
+                  return (
+                    <article className="workout-card" key={workout.id}>
+                      <div className="workout-card-icon">
+                        <Icon size={23} />
+                      </div>
+                      <h4>{workout.title[languageIndex]}</h4>
+                      <p>{workout.description[languageIndex]}</p>
+
+                      <div className="workout-meta">
+                        <span><Clock3 size={14} /> {workout.minutes} {t.duration}</span>
+                        <span>{t.levels[workout.level]}</span>
+                      </div>
+
+                      <button
+                        className="workout-select"
+                        onClick={() => openWorkout(workout.id)}
+                      >
+                        {t.choose}
+                        <ArrowRight size={16} />
+                      </button>
+                    </article>
+                  );
+                })}
+              </div>
+            </div>
+          </section>
+
+          <section className="nutrition section" id="nutrition">
+            <span className="eyebrow">{t.nutrition}</span>
+            <h2>{t.nutritionTitle}</h2>
+            <div className="calculator">
+              <label>{t.age}
+                <input type="number" value={age} onChange={e => setAge(e.target.value)} />
+              </label>
+              <label>{t.weight}
+                <input type="number" value={weight} onChange={e => setWeight(e.target.value)} />
+              </label>
+              <label>{t.height}
+                <input type="number" value={height} onChange={e => setHeight(e.target.value)} />
+              </label>
+              <button className="primary-button" onClick={calculate}>
+                {t.calculate}<ArrowRight size={18} />
+              </button>
+            </div>
+            {calories !== null && (
+              <div className="result">
+                <span>{t.result}</span>
+                <strong>{calories} kcal</strong>
+                <small>Ориентировочная оценка по формуле Миффлина — Сан Жеора для мужчин.</small>
+              </div>
+            )}
+          </section>
+
+          <section className="cta">
+            <Sparkles size={25} />
+            <h2>{t.cta}</h2>
+            <p>{t.ctaDesc}</p>
+            <button className="primary-button" onClick={() => scrollTo('workouts')}>
+              {t.start}<ArrowRight size={18} />
+            </button>
+          </section>
+
+          <footer>
+            <a className="logo" href="#">VIGOR<span>.</span></a>
+            <p>{t.footer}</p>
+            <small>© 2026 VIGOR</small>
+          </footer>
+        </>
+      )}
     </main>
   );
 }
