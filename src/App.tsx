@@ -10,6 +10,63 @@ type Language = 'RU' | 'UK' | 'EN';
 type SessionMode = 'idle' | 'active' | 'rest' | 'paused' | 'completed';
 type PausedFrom = 'active' | 'rest' | null;
 
+type SavedSession = {
+  version: 1;
+  activeWorkout: number;
+  sessionMode: SessionMode;
+  pausedFrom: PausedFrom;
+  exerciseIndex: number;
+  setNumber: number;
+  restSeconds: number;
+  completedSets: number;
+  sessionSeconds: number;
+};
+
+const SESSION_STORAGE_KEY = 'vigor-session-v1';
+
+function loadSavedSession(): SavedSession | null {
+  try {
+    const raw = localStorage.getItem(SESSION_STORAGE_KEY);
+    if (!raw) return null;
+    const saved = JSON.parse(raw) as Partial<SavedSession>;
+    if (
+      saved.version !== 1 ||
+      !Number.isInteger(saved.activeWorkout) ||
+      (saved.activeWorkout as number) < 0 ||
+      (saved.activeWorkout as number) >= workoutLibrary.length ||
+      !['idle', 'active', 'rest', 'paused', 'completed'].includes(String(saved.sessionMode)) ||
+      !Number.isInteger(saved.exerciseIndex) ||
+      !Number.isInteger(saved.setNumber) ||
+      !Number.isFinite(saved.restSeconds) ||
+      !Number.isFinite(saved.completedSets) ||
+      !Number.isFinite(saved.sessionSeconds)
+    ) return null;
+    let sessionMode = saved.sessionMode as SessionMode;
+    let pausedFrom = saved.pausedFrom ?? null;
+    if (sessionMode === 'active' || sessionMode === 'rest') {
+      pausedFrom = sessionMode;
+      sessionMode = 'paused';
+    }
+    if (sessionMode === 'paused' && pausedFrom !== 'active' && pausedFrom !== 'rest') {
+      sessionMode = 'active';
+      pausedFrom = null;
+    }
+    return {
+      version: 1,
+      activeWorkout: saved.activeWorkout as number,
+      sessionMode,
+      pausedFrom,
+      exerciseIndex: Math.max(0, saved.exerciseIndex as number),
+      setNumber: Math.max(1, saved.setNumber as number),
+      restSeconds: Math.max(0, Math.floor(saved.restSeconds as number)),
+      completedSets: Math.max(0, Math.floor(saved.completedSets as number)),
+      sessionSeconds: Math.max(0, Math.floor(saved.sessionSeconds as number))
+    };
+  } catch {
+    return null;
+  }
+}
+
 const translations = {
   RU: {
     nav: ['Возможности', 'Тренировки', 'Питание'],
@@ -253,9 +310,12 @@ const exercisePlans = [
 ];
 
 export default function App() {
+  const [savedSession] = useState<SavedSession | null>(() => loadSavedSession());
   const [lang, setLang] = useState<Language>('RU');
   const [goal, setGoal] = useState(0);
-  const [activeWorkout, setActiveWorkout] = useState<number | null>(null);
+  const [activeWorkout, setActiveWorkout] = useState<number | null>(
+    () => savedSession?.activeWorkout ?? null
+  );
   const [age, setAge] = useState('25');
   const [weight, setWeight] = useState('70');
   const [height, setHeight] = useState('175');
@@ -263,13 +323,27 @@ export default function App() {
   const [menu, setMenu] = useState(false);
   const [languageOpen, setLanguageOpen] = useState(false);
 
-  const [sessionMode, setSessionMode] = useState<SessionMode>('idle');
-  const [pausedFrom, setPausedFrom] = useState<PausedFrom>(null);
-  const [exerciseIndex, setExerciseIndex] = useState(0);
-  const [setNumber, setSetNumber] = useState(1);
-  const [restSeconds, setRestSeconds] = useState(30);
-  const [completedSets, setCompletedSets] = useState(0);
-  const [sessionSeconds, setSessionSeconds] = useState(0);
+  const [sessionMode, setSessionMode] = useState<SessionMode>(
+    () => savedSession?.sessionMode ?? 'idle'
+  );
+  const [pausedFrom, setPausedFrom] = useState<PausedFrom>(
+    () => savedSession?.pausedFrom ?? null
+  );
+  const [exerciseIndex, setExerciseIndex] = useState(
+    () => savedSession?.exerciseIndex ?? 0
+  );
+  const [setNumber, setSetNumber] = useState(
+    () => savedSession?.setNumber ?? 1
+  );
+  const [restSeconds, setRestSeconds] = useState(
+    () => savedSession?.restSeconds ?? 30
+  );
+  const [completedSets, setCompletedSets] = useState(
+    () => savedSession?.completedSets ?? 0
+  );
+  const [sessionSeconds, setSessionSeconds] = useState(
+    () => savedSession?.sessionSeconds ?? 0
+  );
 
   const t = translations[lang];
   const languageIndex = lang === 'RU' ? 0 : lang === 'UK' ? 1 : 2;
@@ -311,6 +385,45 @@ export default function App() {
 
     return () => window.clearInterval(interval);
   }, [sessionMode]);
+
+  // Сохраняем прогресс при каждом изменении состояния тренировки.
+  useEffect(() => {
+    if (activeWorkout === null) {
+      try {
+        localStorage.removeItem(SESSION_STORAGE_KEY);
+      } catch {
+        // Локальное хранилище может быть недоступно.
+      }
+      return;
+    }
+
+    const sessionToSave: SavedSession = {
+      version: 1,
+      activeWorkout,
+      sessionMode,
+      pausedFrom,
+      exerciseIndex,
+      setNumber,
+      restSeconds,
+      completedSets,
+      sessionSeconds
+    };
+
+    try {
+      localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(sessionToSave));
+    } catch {
+      // При недоступности хранилища тренировка продолжит работать в этой вкладке.
+    }
+  }, [
+    activeWorkout,
+    sessionMode,
+    pausedFrom,
+    exerciseIndex,
+    setNumber,
+    restSeconds,
+    completedSets,
+    sessionSeconds
+  ]);
 
   function calculate() {
     const a = Number(age);
