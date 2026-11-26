@@ -3,11 +3,12 @@ import { useEffect, useState } from 'react';
 import {
   Activity, ArrowRight, Dumbbell, Flame, HeartPulse, Menu,
   Sparkles, Target, Globe, ChevronDown, Check, Clock3,
-  ArrowLeft, Play, Pause, RotateCcw, Trophy
+  ArrowLeft, Play, Pause, Trophy
 } from 'lucide-react';
 
 type Language = 'RU' | 'UK' | 'EN';
-type SessionMode = 'idle' | 'active' | 'rest' | 'completed';
+type SessionMode = 'idle' | 'active' | 'rest' | 'paused' | 'completed';
+type PausedFrom = 'active' | 'rest' | null;
 
 const translations = {
   RU: {
@@ -263,6 +264,7 @@ export default function App() {
   const [languageOpen, setLanguageOpen] = useState(false);
 
   const [sessionMode, setSessionMode] = useState<SessionMode>('idle');
+  const [pausedFrom, setPausedFrom] = useState<PausedFrom>(null);
   const [exerciseIndex, setExerciseIndex] = useState(0);
   const [setNumber, setSetNumber] = useState(1);
   const [restSeconds, setRestSeconds] = useState(30);
@@ -284,7 +286,9 @@ export default function App() {
   const currentExercise = currentExercises[exerciseIndex];
   const totalSets = currentExercise ? Number(currentExercise[1]) : 0;
   const totalWorkoutSets = currentExercises.reduce((sum, item) => sum + Number(item[1]), 0);
-  const progress = totalWorkoutSets > 0 ? Math.round((completedSets / totalWorkoutSets) * 100) : 0;
+  const progress = totalWorkoutSets > 0
+    ? Math.round((completedSets / totalWorkoutSets) * 100)
+    : 0;
 
   useEffect(() => {
     if (sessionMode !== 'rest' && sessionMode !== 'active') return;
@@ -293,6 +297,7 @@ export default function App() {
       if (sessionMode === 'active') {
         setSessionSeconds(value => value + 1);
       }
+
       if (sessionMode === 'rest') {
         setRestSeconds(value => {
           if (value <= 1) {
@@ -311,10 +316,12 @@ export default function App() {
     const a = Number(age);
     const w = Number(weight);
     const h = Number(height);
+
     if (a < 14 || a > 100 || w < 30 || w > 300 || h < 100 || h > 230) {
       setCalories(null);
       return;
     }
+
     setCalories(Math.round(10 * w + 6.25 * h - 5 * a + 5));
   }
 
@@ -323,19 +330,20 @@ export default function App() {
     setMenu(false);
   }
 
-  function openWorkout(id: number) {
-    setActiveWorkout(id);
-    resetSession();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-
   function resetSession() {
     setSessionMode('idle');
+    setPausedFrom(null);
     setExerciseIndex(0);
     setSetNumber(1);
     setRestSeconds(30);
     setCompletedSets(0);
     setSessionSeconds(0);
+  }
+
+  function openWorkout(id: number) {
+    setActiveWorkout(id);
+    resetSession();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   function closeWorkout() {
@@ -348,8 +356,22 @@ export default function App() {
     setSessionMode('active');
   }
 
+  function pauseSession() {
+    if (sessionMode === 'active' || sessionMode === 'rest') {
+      setPausedFrom(sessionMode);
+      setSessionMode('paused');
+    }
+  }
+
+  function resumeSession() {
+    if (sessionMode === 'paused' && pausedFrom !== null) {
+      setSessionMode(pausedFrom);
+      setPausedFrom(null);
+    }
+  }
+
   function completeSet() {
-    if (!currentExercise) return;
+    if (!currentExercise || sessionMode !== 'active') return;
 
     setCompletedSets(value => value + 1);
 
@@ -372,6 +394,7 @@ export default function App() {
   }
 
   function skipRest() {
+    if (sessionMode !== 'rest') return;
     setRestSeconds(0);
     setSessionMode('active');
   }
@@ -470,18 +493,27 @@ export default function App() {
                 </div>
               </div>
 
-              {sessionMode === 'rest' ? (
+              {(sessionMode === 'rest' ||
+                (sessionMode === 'paused' && pausedFrom === 'rest')) ? (
                 <div className="session-rest">
                   <span className="eyebrow">{t.rest}</span>
                   <h2>{formatTime(restSeconds)}</h2>
                   <p>{t.restMessage}</p>
                   <div className="session-rest-actions">
-                    <button className="timer-main-button" onClick={skipRest}>
-                      <Play size={18} /> {t.skipRest}
-                    </button>
-                    <button className="timer-reset-button" onClick={() => setSessionMode('active')}>
-                      <Pause size={17} /> {t.pause}
-                    </button>
+                    {sessionMode === 'rest' ? (
+                      <>
+                        <button className="timer-main-button" onClick={skipRest}>
+                          <Play size={18} /> {t.skipRest}
+                        </button>
+                        <button className="timer-reset-button" onClick={pauseSession}>
+                          <Pause size={17} /> {t.pause}
+                        </button>
+                      </>
+                    ) : (
+                      <button className="timer-main-button" onClick={resumeSession}>
+                        <Play size={18} /> {t.resume}
+                      </button>
+                    )}
                   </div>
                 </div>
               ) : (
@@ -504,7 +536,11 @@ export default function App() {
                     <small>{t.reps}</small>
                   </div>
 
-                  <button className="session-done-button" onClick={completeSet}>
+                  <button
+                    className="session-done-button"
+                    onClick={completeSet}
+                    disabled={sessionMode === 'paused'}
+                  >
                     <Check size={19} /> {t.done}
                   </button>
                 </div>
@@ -512,9 +548,11 @@ export default function App() {
 
               <div className="session-bottom">
                 <span><Clock3 size={15} /> {formatTime(sessionSeconds)}</span>
-                <button onClick={() => setSessionMode(sessionMode === 'active' ? 'rest' : 'active')}>
-                  {sessionMode === 'active' ? <Pause size={16} /> : <Play size={16} />}
-                  {sessionMode === 'active' ? t.pause : t.resume}
+                <button
+                  onClick={sessionMode === 'paused' ? resumeSession : pauseSession}
+                >
+                  {sessionMode === 'paused' ? <Play size={16} /> : <Pause size={16} />}
+                  {sessionMode === 'paused' ? t.resume : t.pause}
                 </button>
                 <button onClick={closeWorkout}>{t.finish}</button>
               </div>
@@ -527,7 +565,9 @@ export default function App() {
             <a className="logo" href="#">VIGOR<span>.</span></a>
             <nav className={menu ? 'nav open' : 'nav'}>
               {t.nav.map((item, i) => (
-                <button key={item} onClick={() => scrollTo(['features', 'workouts', 'nutrition'][i])}>{item}</button>
+                <button key={item} onClick={() => scrollTo(['features', 'workouts', 'nutrition'][i])}>
+                  {item}
+                </button>
               ))}
             </nav>
             <div className="header-actions">
@@ -539,7 +579,8 @@ export default function App() {
                   aria-expanded={languageOpen}
                   onClick={() => setLanguageOpen(!languageOpen)}
                 >
-                  <Globe size={16} /><span>{lang}</span>
+                  <Globe size={16} />
+                  <span>{lang}</span>
                   <ChevronDown className={languageOpen ? 'language-chevron rotated' : 'language-chevron'} size={14} />
                 </button>
                 {languageOpen && (
@@ -552,7 +593,10 @@ export default function App() {
                         type="button"
                         key={code}
                         className={lang === code ? 'language-option selected' : 'language-option'}
-                        onClick={() => { setLang(code); setLanguageOpen(false); }}
+                        onClick={() => {
+                          setLang(code);
+                          setLanguageOpen(false);
+                        }}
                       >
                         <span className="language-code">{code}</span>
                         <span className="language-name">{name}</span>
@@ -562,7 +606,9 @@ export default function App() {
                   </div>
                 )}
               </div>
-              <button className="mobile-menu" onClick={() => setMenu(!menu)}><Menu /></button>
+              <button className="mobile-menu" onClick={() => setMenu(!menu)}>
+                <Menu />
+              </button>
             </div>
           </header>
 
@@ -585,7 +631,13 @@ export default function App() {
             <div className="feature-grid">
               {t.cards.map((card, i) => {
                 const Icon = [Dumbbell, HeartPulse, Activity][i];
-                return <article className="feature-card" key={card}><Icon size={28} /><h3>{card}</h3><p>{t.cardDesc[i]}</p></article>;
+                return (
+                  <article className="feature-card" key={card}>
+                    <Icon size={28} />
+                    <h3>{card}</h3>
+                    <p>{t.cardDesc[i]}</p>
+                  </article>
+                );
               })}
             </div>
           </section>
@@ -597,8 +649,14 @@ export default function App() {
               {t.goalNames.map((name, i) => {
                 const Icon = icons[i];
                 return (
-                  <button key={name} className={goal === i ? 'goal-card active' : 'goal-card'} onClick={() => setGoal(i)}>
-                    <Icon size={22} /><span>{name}</span><ArrowRight size={16} />
+                  <button
+                    key={name}
+                    className={goal === i ? 'goal-card active' : 'goal-card'}
+                    onClick={() => setGoal(i)}
+                  >
+                    <Icon size={22} />
+                    <span>{name}</span>
+                    <ArrowRight size={16} />
                   </button>
                 );
               })}
@@ -636,22 +694,33 @@ export default function App() {
               <label>{t.age}<input type="number" value={age} onChange={e => setAge(e.target.value)} /></label>
               <label>{t.weight}<input type="number" value={weight} onChange={e => setWeight(e.target.value)} /></label>
               <label>{t.height}<input type="number" value={height} onChange={e => setHeight(e.target.value)} /></label>
-              <button className="primary-button" onClick={calculate}>{t.calculate}<ArrowRight size={18} /></button>
+              <button className="primary-button" onClick={calculate}>
+                {t.calculate}<ArrowRight size={18} />
+              </button>
             </div>
             {calories !== null && (
               <div className="result">
-                <span>{t.result}</span><strong>{calories} kcal</strong>
+                <span>{t.result}</span>
+                <strong>{calories} kcal</strong>
                 <small>Ориентировочная оценка по формуле Миффлина — Сан Жеора для мужчин.</small>
               </div>
             )}
           </section>
 
           <section className="cta">
-            <Sparkles size={25} /><h2>{t.cta}</h2><p>{t.ctaDesc}</p>
-            <button className="primary-button" onClick={() => scrollTo('workouts')}>{t.start}<ArrowRight size={18} /></button>
+            <Sparkles size={25} />
+            <h2>{t.cta}</h2>
+            <p>{t.ctaDesc}</p>
+            <button className="primary-button" onClick={() => scrollTo('workouts')}>
+              {t.start}<ArrowRight size={18} />
+            </button>
           </section>
 
-          <footer><a className="logo" href="#">VIGOR<span>.</span></a><p>{t.footer}</p><small>© 2026 VIGOR</small></footer>
+          <footer>
+            <a className="logo" href="#">VIGOR<span>.</span></a>
+            <p>{t.footer}</p>
+            <small>© 2026 VIGOR</small>
+          </footer>
         </>
       )}
     </main>
