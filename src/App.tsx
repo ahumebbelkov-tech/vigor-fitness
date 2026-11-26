@@ -2,7 +2,8 @@
 import { useState } from 'react';
 import {
   Activity, ArrowRight, Dumbbell, Flame,
-  HeartPulse, Menu, Sparkles, Target
+  HeartPulse, Menu, Sparkles, Target,
+  Globe, ChevronDown, Check
 } from 'lucide-react';
 
 const translations = {
@@ -105,6 +106,7 @@ export default function App() {
   const [height, setHeight] = useState('175');
   const [calories, setCalories] = useState<number | null>(null);
   const [menu, setMenu] = useState(false);
+  const [languageOpen, setLanguageOpen] = useState(false);
 
   const t = translations[lang];
 
@@ -140,11 +142,49 @@ export default function App() {
         </nav>
 
         <div className="header-actions">
-          <select value={lang} onChange={e => setLang(e.target.value as 'RU' | 'UK' | 'EN')}>
-            <option value="RU">RU</option>
-            <option value="UK">UK</option>
-            <option value="EN">EN</option>
-          </select>
+          <div className="language-picker">
+            <button
+              className={languageOpen ? 'language-trigger active' : 'language-trigger'}
+              type="button"
+              aria-label="Choose language"
+              aria-expanded={languageOpen}
+              onClick={() => setLanguageOpen(!languageOpen)}
+            >
+              <Globe size={16} />
+              <span>{lang}</span>
+              <ChevronDown
+                className={languageOpen ? 'language-chevron rotated' : 'language-chevron'}
+                size={14}
+              />
+            </button>
+
+            {languageOpen && (
+              <div className="language-panel">
+                <span className="language-panel-label">LANGUAGE</span>
+
+                {([
+                  ['RU', 'Русский'],
+                  ['UK', 'Українська'],
+                  ['EN', 'English']
+                ] as const).map(([code, name]) => (
+                  <button
+                    type="button"
+                    key={code}
+                    className={lang === code ? 'language-option selected' : 'language-option'}
+                    onClick={() => {
+                      setLang(code);
+                      setLanguageOpen(false);
+                    }}
+                  >
+                    <span className="language-code">{code}</span>
+                    <span className="language-name">{name}</span>
+                    {lang === code && <Check size={16} />}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
           <button className="mobile-menu" onClick={() => setMenu(!menu)}>
             <Menu />
           </button>
@@ -215,7 +255,9 @@ export default function App() {
           <label>{t.height}
             <input type="number" value={height} onChange={e => setHeight(e.target.value)} />
           </label>
-          <button className="primary-button" onClick={calculate}>{t.calculate}<ArrowRight size={18} /></button>
+          <button className="primary-button" onClick={calculate}>
+            {t.calculate}<ArrowRight size={18} />
+          </button>
         </div>
         {calories !== null && (
           <div className="result">
