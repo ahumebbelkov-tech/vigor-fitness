@@ -1,10 +1,11 @@
-
 import { useEffect, useState } from 'react';
 import {
   Activity, ArrowRight, Dumbbell, Flame, HeartPulse, Menu,
   Sparkles, Target, Globe, ChevronDown, Check, Clock3,
   ArrowLeft, Play, Pause, Trophy
 } from 'lucide-react';
+
+const HERO_IMAGE = '/hero-home.jpg';
 
 type Language = 'RU' | 'UK' | 'EN';
 type SessionMode = 'idle' | 'active' | 'rest' | 'paused' | 'completed';
@@ -72,7 +73,7 @@ const translations = {
     nav: ['Возможности', 'Тренировки', 'Питание'],
     eyebrow: 'ТВОЯ СИЛА. ТВОЙ ТЕМП.',
     title: 'Стань', accent: 'сильнее.',
-    desc: 'Тренируйся дома. Питайся осознанно. Отслеживай прогресс. Создай версию себя, которой будешь гордиться.',
+    desc: 'Тренируйся дома. Отслеживай прогресс.',
     start: 'Подобрать тренировку',
     features: 'БОЛЬШЕ, ЧЕМ ТРЕНИРОВКИ',
     featureTitle: 'Новая привычка жить сильнее.',
@@ -135,7 +136,7 @@ const translations = {
     nav: ['Можливості', 'Тренування', 'Харчування'],
     eyebrow: 'ТВОЯ СИЛА. ТВІЙ ТЕМП.',
     title: 'Стань', accent: 'сильнішим.',
-    desc: 'Тренуйся вдома. Харчуйся усвідомлено. Відстежуй прогрес. Створи версію себе, якою пишатимешся.',
+    desc: 'Тренуйся вдома. Відстежуй прогрес.',
     start: 'Обрати тренування',
     features: 'БІЛЬШЕ, НІЖ ТРЕНУВАННЯ',
     featureTitle: 'Нова звичка жити сильніше.',
@@ -198,7 +199,7 @@ const translations = {
     nav: ['Features', 'Workouts', 'Nutrition'],
     eyebrow: 'YOUR STRENGTH. YOUR PACE.',
     title: 'Become', accent: 'stronger.',
-    desc: 'Train at home. Eat with intention. Track your progress. Build a version of yourself you are proud of.',
+    desc: 'Train at home. Track your progress.',
     start: 'Find your workout',
     features: 'MORE THAN WORKOUTS',
     featureTitle: 'A stronger way of living.',
@@ -726,7 +727,12 @@ export default function App() {
           </header>
 
           <section className="hero">
-            <div className="hero-image" />
+            <div
+              className="hero-image"
+              style={{
+                backgroundImage: `linear-gradient(90deg, rgba(8, 11, 8, .96) 0%, rgba(8, 11, 8, .78) 52%, rgba(8, 11, 8, .35) 100%), linear-gradient(0deg, rgba(8, 11, 8, .72) 0%, transparent 75%), url(${HERO_IMAGE})`
+              }}
+            />
             <div className="hero-content">
               <span className="eyebrow">{t.eyebrow}</span>
               <h1>{t.title}<br /><em>{t.accent}</em></h1>
@@ -734,7 +740,6 @@ export default function App() {
               <button className="primary-button" onClick={() => scrollTo('workouts')}>
                 {t.start}<ArrowRight size={18} />
               </button>
-              <div className="hero-caption">VIGOR FITNESS PLATFORM · 2026</div>
             </div>
           </section>
 
